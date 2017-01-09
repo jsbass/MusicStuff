@@ -1,0 +1,36 @@
+﻿
+@{
+    ViewBag.Title = "AudioTest";
+}
+
+<h2>AudioTest</h2>
+<button id="play" type="button" onclick="togglePlaying">Play/Pause</button>
+<script>
+    var isPlaying = false;
+    var BUFFER_SIZE = Math.pow(2, 13); // 8,192
+
+    function togglePlaying() {
+        isPlaying = !isPlaying;
+    }
+
+    var audioCtx = new AudioContext();
+    var audioInput = null,
+        microphone_stream = null,
+        gainNode = null,
+        scriptProcessorNode = null,
+        script_processor_fft_node = null,
+        analyser_node = null;
+
+    navigator.getUserMedia = navigator.getUserMedia ||
+        navigator.webkitGetUserMedia ||
+        navigator.mozGetUserMedia ||
+        navigator.msGetUserMedia;
+
+    navigator.getUserMedia({ audio = true },
+        function(stream) {
+            microphone_stream = stream;
+        },
+        function() {
+            console.error("Browser does not support JS microphone capture");
+        });
+</script>

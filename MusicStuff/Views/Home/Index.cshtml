@@ -1,0 +1,34 @@
+﻿<div ng-app="Midi" ng-controller="MidiDisplayController as midi">
+    <form method="post" id="uploadFile" ng-submit="midi.submitAndLoadFile()">
+        <input fileread='midi.file' type="file" name="file"/>
+        <input type="submit" value="Submit"/>
+    </form>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Position</th><th>Bytes</th><th>Information</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td></td><td></td><td>Format: {{midi.midi.Header.fileFormat}}, Tracks: {{midi.midi.Header.trackCount}}, Division: {{midi.midi.Header.division.ticksPerType}}</td>
+        </tr>
+        <tr ng-repeat="event in midi.midi.Tracks[0].events">
+            <td></td><td>{{event.DeltaTimeBytes}} {{event.Event.EventTypeByte}} {{event.Event.DataBytes}}</td><td>{{event.Event.Type}}: {{event.Event.DataBytes}}</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+@section scripts
+{
+    @Scripts.Render("~/bundles/angular")
+    @Scripts.Render("~/Scripts/Angular/controllers.js")
+    @Scripts.Render("~/Scripts/Angular/services.js")
+    @Scripts.Render("~/Scripts/Angular/directives.js")
+    @Scripts.Render("~/Scripts/Angular/filters.js")
+    <script>
+        var app = angular.module('Midi', ['services', 'controllers', 'directives', 'filters']);
+    </script>
+}
