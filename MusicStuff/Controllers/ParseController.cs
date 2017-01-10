@@ -1,18 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text;
+﻿using System.Net;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
-using MidiParser.Helpers;
+using MusicStuff.Helpers;
 using MusicStuff.Models.Midi;
 using Newtonsoft.Json;
 
-namespace MidiParser.Controllers
+namespace MusicStuff.Controllers
 {
     public class ParseController : ApiController
     {

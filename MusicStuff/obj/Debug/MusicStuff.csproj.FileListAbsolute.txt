@@ -85,6 +85,5 @@ C:\Github\MusicStuff\MusicStuff\bin\Microsoft.Owin.Security.Google.xml
 C:\Github\MusicStuff\MusicStuff\bin\Microsoft.Owin.Security.Twitter.xml
 C:\Github\MusicStuff\MusicStuff\bin\Microsoft.Owin.Security.MicrosoftAccount.xml
 C:\Github\MusicStuff\MusicStuff\bin\System.Web.Http.Owin.xml
-C:\Github\MusicStuff\MusicStuff\obj\Debug\MusicStuff.csprojResolveAssemblyReference.cache
 C:\Github\MusicStuff\MusicStuff\obj\Debug\MusicStuff.dll
 C:\Github\MusicStuff\MusicStuff\obj\Debug\MusicStuff.pdb

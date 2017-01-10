@@ -1,7 +1,6 @@
-﻿using System.Web;
-using System.Web.Optimization;
+﻿using System.Web.Optimization;
 
-namespace MidiParser
+namespace MusicStuff
 {
     public class BundleConfig
     {
@@ -23,8 +22,15 @@ namespace MidiParser
             bundles.Add(new StyleBundle("~/Content/css").Include(
                       "~/Content/bootstrap.css",
                       "~/Content/site.css"));
+
             bundles.Add(new ScriptBundle("~/bundles/angular").Include(
                 "~/Scripts/angular.js"));
+
+            bundles.Add(new ScriptBundle("~/bundles/myAngular").Include(
+                "~/Scripts/Angular/controllers.js",
+                "~/Scripts/Angular/directives.js",
+                "~/Scripts/Angular/filters.js",
+                "~/Scripts/Angular/services.js"));
         }
     }
 }
