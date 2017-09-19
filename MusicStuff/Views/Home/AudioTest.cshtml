@@ -5,7 +5,7 @@
 
 <h2>AudioTest</h2>
 <div ng-app="tuner" ng-controller="TunerController as tunerCtrl">
-    <select name="sources" ng-model="tunerCtrl.selectedSource" ng-options="source.deviceId as source.label for source in tunerCtrl.audioSources"></select>
+    <select name="sources" ng-model="tunerCtrl.selectedSource" ng-options="source.deviceId as source.label for source in tunerCtrl.audioSources" ng-change="tunerCtrl.updateSource()"></select>
     <div>
         <label>Frequency</label><p>{{tunerCtrl.peakFrequency}}</p>
         <label>Note Number</label><p>{{tunerCtrl.currentNote}}</p>
@@ -13,165 +13,20 @@
     </div>
     <div>
         <label>Output Frequency</label><p>{{tunerCtrl.oscillatorFreq}}</p>
-        <label>Desired Note</label><input type="range" ng-model="tunerCtrl.desiredNote" min="0" max="107" ng-change="tunerCtrl.updateDesiredNote()"/><p>{{tunerCtrl.desiredNoteString}}</p>
+        <label>Desired Note</label><input type="range" ng-model="tunerCtrl.desiredNote" min="0" max="107" ng-change="tunerCtrl.updateDesiredNote()" /><p>{{tunerCtrl.desiredNoteString}}</p>
     </div>
-    <button type="button" ng-click="tunerCtrl.toggleRecording()"><span ng-hide="tunerCtrl.isPlaying" class="glyphicon glyphicon-play"></span><span ng-show="tunerCtrl.isPlaying" class="glyphicon glyphicon-stop"></span></button>
+    <button type="button" ng-click="tunerCtrl.toggleRecording()"><span ng-hide="tunerCtrl.isPlaying" class="glyphicon glyphicon-play"></span><span ng-show="tunerCtrl.isPlaying" class="glyphicon glyphicon-stop"></span></button><br/>
+    <canvas frequency-chart style="height: 500px; width: 500px;"></canvas>
 </div>
-@*<button id="microphone" type="button" onclick="switchToMicrophone()">Microphone</button>
-<button id="wave" type="button" onclick="switchToOscillator()">Oscillator</button><br/>
-<input id="octaveRange" type="range" min="0" max="8" value="4" onchange="document.getElementById('octaveLabel').innerText=this.value"/><p id="octaveLabel">4</p><br/>
-<input id="letterRange" type="range" max="11" min="0" value="9" onchange="document.getElementById('letterLabel').innerText=notes[this.value]"/><p id="letterLabel">A</p>
-<p id="desiredNote"></p>
-<canvas id="canvas" style="width: 500px; height:500px"></canvas>
-<p id="note"></p>*@
 @Scripts.Render("~/bundles/angular")
 @Scripts.Render("~/bundles/myAngular")
-<script>
-    window.navigator.getUserMedia = window.navigator.getUserMedia ||
-        window.navigator.webkitGetUserMedia ||
-        window.navigator.mozGetUserMedia ||
-        window.navigator.msGetUserMedia;
+    <script>
+        window.navigator.getUserMedia = window.navigator.getUserMedia ||
+            window.navigator.webkitGetUserMedia ||
+            window.navigator.mozGetUserMedia ||
+            window.navigator.msGetUserMedia;
 
-    window.AudioContext = window.AudioContext || window.webkitAudioContext;
+        window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-    var app = angular.module('tuner', ['services', 'controllers', 'directives', 'filters']);
-    //var SAMPLE_RATE = 44100;
-
-    //var isPlaying = false,
-    //    audioCtx = null,
-    //    sourceNode = null,
-    //    analyser = null,
-    //    bufferLength = 0,
-    //    dataArray = [],
-    //    noteElem = document.getElementById("note"),
-    //    audioCtx = null,
-    //    canvasCtx = null;
-
-    
-    //function togglePlaying() {
-    //    isPlaying = !isPlaying;
-    //}
-
-    //var WIDTH = 500;
-    //var HEIGHT = 500;
-    //function draw() {
-    //    analyser.getByteFrequencyData(dataArray);
-
-    //    canvasCtx.fillStyle = 'rgb(0, 0, 0)';
-    //    canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
-
-    //    var barWidth = (WIDTH / bufferLength);
-    //    var barHeight;
-
-    //    var x = 0;
-
-    //    for (var i = 0; i < bufferLength; i++) {
-
-    //        var v = dataArray[i];
-
-    //        barHeight = dataArray[i] / 256 * HEIGHT;
-
-    //        canvasCtx.fillStyle = 'rgb(256,100,100)';
-    //        canvasCtx.fillRect(x, HEIGHT - barHeight, barWidth, barHeight);
-
-    //        x += barWidth;
-    //    }
-    //    var maxItems = getMaxNItems(dataArray, 1);
-    //    var frequencies = maxItems.map(function(i) { return SAMPLE_RATE / analyser.fftSize * i });
-    //    noteElem.innerText = frequencies.map(function(f) {
-    //        return '(' + f + ') ' + getNoteString(getFrequencyNote(f));
-    //    }).join(',');
-
-    //    canvasCtx.lineTo(canvas.width, canvas.height / 2);
-    //    canvasCtx.stroke();
-
-    //    requestAnimationFrame(draw);
-    //}
-    //window.onload = function() {
-    //    canvasCtx = document.getElementById("canvas").getContext("2d");
-    //    audioCtx = new AudioContext();
-    //    analyser = audioCtx.createAnalyser();
-    //    bufferLength = analyser.frequencyBinCount;
-    //    dataArray = new Uint8Array(bufferLength);
-    //    analyser.minDecibels = -90;
-    //    analyser.maxDecibels = -10;
-    //    analyser.connect(audioCtx.destination);
-
-    //    sourceNode = audioCtx.createOscillator();
-
-    //    draw();
-    //}
-
-    //function switchToOscillator() {
-    //    sourceNode.disconnect();
-    //    analyser.disconnect();
-
-    //    sourceNode = audioCtx.createOscillator();
-    //    sourceNode.type = 'sine';
-    //    var letter = document.getElementById('letterRange');
-    //    var octave = document.getElementById('octaveRange');
-    //    var note = parseInt(letter.value) + 12 * octave.value;
-    //    console.log('starting oscillator for note: ' + getNoteString(note) + ', n: ' + note + ', f: ' + getNoteFrequency(note) + " Hz");
-    //    sourceNode.frequency.value = getNoteFrequency(note);
-
-    //    sourceNode.connect(analyser);
-    //    analyser.connect(audioCtx.destination);
-
-    //    sourceNode.start();
-    //}
-
-    //function switchToMicrophone() {
-    //    navigator.getUserMedia({ audio: true },
-    //        function (stream) {
-    //            sourceNode.disconnect();
-    //            sourceNode = audioCtx.createMediaStreamSource(stream);
-    //            analyser.disconnect();
-                
-    //            sourceNode.connect(analyser);
-    //            analyser.connect(audioCtx.destination);
-
-    //        },
-    //        function () {
-    //            console.error("Browser does not support JS microphone capture");
-    //        }
-    //    );
-    //}
-
-    //var notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-
-    //function getNoteString(n) {
-    //    var letter = notes[n % 12];
-    //    var octave = Math.floor(n / 12);
-
-    //    return letter + octave;
-    //}
-
-    //function getNoteFrequency(n) {
-    //    return 440 * Math.pow(2, (n - 57) / 12);
-    //}
-
-    //function getFrequencyNote(f) {
-    //    return Math.round(12 * Math.log2(f / 440) + 57);
-    //}
-
-    //function getCents(f, n) {
-    //    return Math.floor(1200 * Math.log2(f / getNoteFrequency(n)));
-    //}
-
-    //function getMaxNItems(arr, n) {
-    //    var lowest = [];
-    //    if (n > arr.length) return arr;
-    //    for (var i = 0; i < n; i++) {
-    //        lowest[i] = -1;
-    //    }
-    //    for (var i = 0; i < arr.length; i++) {
-    //        for (var j = 0; j < lowest.length; j++) {
-    //            if (lowest[j] < arr[i]) {
-    //                lowest[j] = i;
-    //                break;
-    //            }
-    //        }
-    //    }
-    //    return lowest;
-    //}
-</script>
+        var app = angular.module('tuner', ['services', 'controllers', 'directives', 'filters']);
+    </script>

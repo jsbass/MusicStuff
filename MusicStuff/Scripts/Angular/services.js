@@ -6,6 +6,8 @@ services.service('AudioAnalyser', function () {
     var ctx = new AudioContext();
     var observers = [];
     var analyser = ctx.createAnalyser();
+    analyser.minDecibels = -90;
+    analyser.maxDecibels = -10;
 
     var isPaused = true;
 
@@ -87,5 +89,5 @@ services.service('AudioAnalyser', function () {
         return Math.floor(1200 * Math.log2(f / bind.getNoteFrequency(n)));
     }
 
-    this.setFFTSize(2048);
+    this.setFFTSize(8192);
 });

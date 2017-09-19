@@ -1,6 +1,6 @@
 ﻿<div ng-app="Midi" ng-controller="MidiDisplayController as midi">
     <form method="post" id="uploadFile" ng-submit="midi.submitAndLoadFile()">
-        <input fileread='midi.file' type="file" name="file"/>
+        <input fileread='midi.file' type="file" name="file" accept="audio/*"/>
         <input type="submit" value="Submit"/>
     </form>
 
@@ -11,11 +11,18 @@
         </tr>
         </thead>
         <tbody>
-        <tr>
-            <td></td><td></td><td>Format: {{midi.midi.Header.fileFormat}}, Tracks: {{midi.midi.Header.trackCount}}, Division: {{midi.midi.Header.division.ticksPerType}}</td>
-        </tr>
-        <tr ng-repeat="event in midi.midi.Tracks[0].events">
-            <td></td><td>{{event.DeltaTimeBytes}} {{event.Event.EventTypeByte}} {{event.Event.DataBytes}}</td><td>{{event.Event.Type}}: {{event.Event.DataBytes}}</td>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Format: {{midi.midi.Header.fileFormat}}, Tracks: {{midi.midi.Header.trackCount}}, Division: {{midi.midi.Header.division.ticksPerType}}</td>
+            </tr>
+        </tbody>
+        <tbody ng-repeat="track in midi.midi.Tracks">
+        <tr><td colspan="3">Track {{$index}}</td></tr>
+        <tr ng-repeat="event in track.events">
+            <td></td>
+            <td>{{event.DeltaTimeBytes}} {{event.Event.EventTypeByte}} {{event.Event.DataBytes}}</td>
+            <td>{{event.Event.Type}}: {{event.Event.DataBytes}}</td>
         </tr>
         </tbody>
     </table>

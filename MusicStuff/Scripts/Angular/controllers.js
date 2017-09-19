@@ -31,7 +31,7 @@ controllers.controller('MidiDisplayController',
                 xhr.addEventListener("load", xhrComplete, false);
                 //xhr.addEventListener("error", xhrError, false);
                 //xhr.addEventListener("abort", uploadAbort, false);
-                xhr.open("POST", "/parse");
+                xhr.open("POST", "parse/midi");
                 xhr.send(fd);
                 console.log("Uploading...");
             } else {
@@ -40,18 +40,71 @@ controllers.controller('MidiDisplayController',
         }
     }
 ]);
+//controllers.controller('OscillatorController',
+//[
+//    'AudioAnalyser',
+//    function (analyser) {
+//        var bind = this;
+
+//        this.note = 57;
+//        this.noteString = analyser.getNoteString(this.note);
+//        this.oscillatorFreq = analyser.getNoteFrequency(this.note);
+
+//        var oscillator = {
+//            isPlaying: false,
+//            node: analyser.getCtx().createOscillator(),
+//            start: function () {
+//                if (this.node == null) {
+//                    console.log("node not initialized");
+//                }
+//                this.node.start();
+//                this.isStarted = true;
+//            },
+//            stop: function () {
+//                if (this.node == null) {
+//                    console.log("node not initialized");
+//                }
+//                this.node.stop();
+//                this.isStarted = false;
+//            }
+//        }
+
+//        this.updateDesiredNote = function () {
+//            bind.oscillatorFreq = analyser.getNoteFrequency(bind.note);
+//            bind.noteString = analyser.getNoteString(bind.note);
+//            oscillator.node.frequency.value = oscillator.isPlaying ? bind.note : 0;
+//        }
+
+//        this.togglePlayback = function() {
+//            if (oscillator.isPlaying) {
+//                oscillator.node.frequency.value = bind.oscillatorFreq;
+//            } else {
+//                oscillator.node.frequency.value = 0;
+//            }
+
+//            oscillator.isPlaying = !oscillator.isPlaying;
+//        }
+
+//        this.getOsc = function () {
+//            return oscillator;
+//        }
+//    }
+//]);
+
+window.oscillatorInput = {
+    kind: "audioinput",
+    deviceId: "oscillator",
+    label: "Generated Signal",
+    groupId: "oscillator"
+};
 
 controllers.controller('TunerController',
 [
     '$scope',
+    '$timeout',
     'AudioAnalyser',
-    function($scope, analyser) {
-        var oscillatorInput = {
-            kind: "audioinput",
-            deviceId: "oscillator",
-            label: "Generated Signal",
-            groupId: "oscillator"
-        }
+    function($scope, $timeout, analyser) {
+        
         var isPermitted = false;
         var bind = this;
         var stream = null;
@@ -74,26 +127,24 @@ controllers.controller('TunerController',
                 if (this.node == null) {
                     console.log("node not initialized");
                 }
-                this.node.start();
+                this.node.frequency.value = bind.oscillatorFreq;
                 this.isStarted = true;
             },
             stop: function () {
                 if (this.node == null) {
                     console.log("node not initialized");
                 }
-                this.node.stop();
+                this.node.frequency.value = 0;
                 this.isStarted = false;
             }
         }
-        
-        this.getOsc = function() {
-            return oscillator;
-        }
+
+        oscillator.node.start();
 
         this.updateDesiredNote = function () {
             bind.oscillatorFreq = analyser.getNoteFrequency(bind.desiredNote);
             bind.desiredNoteString = analyser.getNoteString(bind.desiredNote);
-            oscillator.node.frequency.value = bind.oscillatorFreq;
+            oscillator.node.frequency.value = oscillator.isStarted ? bind.oscillatorFreq : 0;
         }
 
         this.updateSources = function () {
@@ -107,8 +158,8 @@ controllers.controller('TunerController',
                                 bind.audioSources = devices.filter(function(d) {
                                     return d.kind === "audioinput";
                                 });
-                                bind.audioSources.push(oscillatorInput);
-                                bind.selectedSource = oscillatorInput.deviceId;
+                                bind.audioSources.push(window.oscillatorInput);
+                                bind.selectedSource = window.oscillatorInput.deviceId;
                                 $scope.$apply();
                             });
                     },
@@ -133,9 +184,8 @@ controllers.controller('TunerController',
             bind.isPlaying = !bind.isPlaying;
             if (bind.isPlaying) {
                 analyser.start();
-                if (bind.selectedSource === oscillatorInput.deviceId) {
+                if (bind.selectedSource === window.oscillatorInput.deviceId) {
                     analyser.connectTo(oscillator.node);
-                    analyser.connect(analyser.getCtx().destination);
                     oscillator.start();
                 } else {
                     navigator.getUserMedia(
@@ -144,14 +194,13 @@ controllers.controller('TunerController',
                             stream = s;
                             var node = analyser.getCtx().createMediaStreamSource(stream);
                             analyser.connectTo(node);
-                            analyser.connect(analyser.getCtx().destination);
                         },
                         console.error);
                 }
             } else {
                 analyser.stop();
                 if (stream != null) stream.getTracks()[0].stop();
-                else if(oscillator.isStarted) oscillator.stop();
+                oscillator.stop();
             }
         }
 
@@ -170,12 +219,18 @@ controllers.controller('TunerController',
             bind.currentNoteString = analyser.getNoteString(bind.currentNote);
             bind.cents = analyser.getCents(bind.peakFrequency, bind.currentNote);
             bind.cents = bind.cents <= 0 ? bind.cents : "+" + bind.cents;
+            $timeout(function() { $scope.$apply(); });
+            //console.log([bind.peakFrequency + " Hz", bind.currentNote, bind.currentNoteString, bind.cents].join(", "));
+        }
 
-            console.log([bind.peakFrequency + " Hz", bind.currentNote, bind.currentNoteString, bind.cents].join(", "));
+        this.updateSource = function() {
+            bind.toggleRecording();
+            bind.toggleRecording();
         }
 
         this.updateSources();
         this.updateDesiredNote();
         analyser.addObserverCallback(updateInfo);
+        analyser.connect(analyser.getCtx().destination);
     }
 ]);
